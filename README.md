@@ -1,3 +1,6 @@
+https://docs.microsoft.com/zh-tw/windows-hardware/manufacture/desktop/winpe-intro
+https://docs.microsoft.com/zh-tw/windows-hardware/manufacture/desktop/winpe-create-usb-bootable-drive
+
 # How-to-make-a-WinPE-Media
 # Step 1: Create working files
 1.you shoule download the ADK from the MS website.(Download the Windows ADK and Download the WinPE add-on for the Windows ADK)
@@ -80,6 +83,57 @@ Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files\W
 ps:如果您的應用程式需要暫存儲存空間，或當 WinPE 執行應用程式時沒有回應，您可能需要增加配置給 WinPE 的暫存儲存空間 (臨時空間) 數量。
 
 4.若要在 WinPE 啟動時自動啟動執行命令介面或應用程式，請將路徑位置新增至 Winpeshl.ini 檔案。
+
+# 將電源配置設定為高效能
+
+在 [記事本] 中編輯此檔案：C:\WinPE_amd64\mount\windows\system32\startnet.cmd，新增命令以將電源配置設定為高效能。
+
+wpeinit
+powercfg /s 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 
+
+# 將更新新增至 WinPE (如有需要)
+
+1.下載最新更新。
+
+2.將更新套用至您已掛接的 WinPE 映像。
+
+Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"E:\windows10.0-kbxxxxx.msu"
+
+3.鎖定更新：
+
+dism /cleanup-image /image:C:\WinPE_amd64\mount\windows /startcomponentcleanup /resetbase /scratchdir:C:\temp
+
+
+# 卸載 Windows PE 映像並建立媒體
+
+1.Unmount the WinPE image, committing changes.
+
+Dism /Unmount-Image /MountDir:"C:\WinPE_amd64\mount" /commit
+
+2.Create bootable media, such as a USB flash drive.
+
+MakeWinPEMedia /UFD C:\WinPE_amd64 F:
+
+3.Boot the media. WinPE starts automatically. After the WinPE window appears, the wpeinit command runs automatically. This may take a few minutes. Verify your customizations.
+
+# 刪除工作目錄：
+
+在某些情況下，您可能無法復原掛接的映像。 DISM 會防止您不小心刪除工作目錄，因此您可能必須嘗試下列步驟，設法刪除已掛接的目錄。 嘗試下列各做法的步驟：
+
+1.嘗試重新掛接映像：
+
+dism /Remount-Image /MountDir:C:\mount
+
+2.嘗試卸載映像，並捨棄變更：
+
+dism /Unmount-Image /MountDir:C:\mount /discard
+
+3.嘗試清除與掛接的映像相關聯的資源：
+
+dism /Cleanup-Mountpoints
+
+
+
 
 
 
