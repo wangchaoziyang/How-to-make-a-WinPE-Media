@@ -43,7 +43,43 @@ MakeWinPEMedia /UFD C:\WinPE_amd64 P:
 1.Use MakeWinPEMedia with the /ISO option to create an ISO file containing the Windows PE files:
 MakeWinPEMedia /ISO C:\WinPE_amd64 C:\WinPE_amd64\WinPE_amd64.iso
 
-2.Optional Burn a DVD or CD: In Windows Explorer, right-click the ISO file, and select Burn disc image > Burn, and follow the prompts.
+2.Optional Burn a DVD or CD: In Windows Explorer, right-click the ISO file, and select Burn disc image > Burn, and follow the prompt
+
+# DISM 解压WIM文件
+
+Dism /Mount-Image /ImageFile:"C:\WinPE_amd64\media\sources\boot.wim" /index:1 /MountDir:"C:\WinPE_amd64\mount"
+
+# 新增裝置驅動程式 (.inf 檔案)
+
+Dism /Add-Driver /Image:"C:\WinPE_amd64\mount" /Driver:"C:\SampleDriver\driver.inf"
+
+# 新增套件/語言/選用元件/.cab 檔案
+
+Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\WinPE-HTA.cab"  
+
+Dism /Add-Package /Image:"C:\WinPE_amd64\mount" /PackagePath:"C:\Program Files\Windows Kits\10\Assessment and Deployment Kit\Windows Preinstallation Environment\amd64\WinPE_OCs\en-us\WinPE-HTA_en-us.cab"
+
+# 新增檔案和資料夾
+
+將檔案和資料夾複製到 C:\WinPE_amd64\mount 資料夾。 這些檔案會顯示在 WinPE 的 X:\ 資料夾中。（請勿新增太多檔案，因為這些檔案會使 WinPE 速度變慢，而且可能佔滿預設 RAMDisk 環境中的可用記憶體。）
+
+# 新增啟動指令碼
+
+修改 Startnet.cmd 以包含您的自訂命令。 這個檔案位於您掛接的映像 (位於 C:\WinPE_amd64\mount\Windows\System32\Startnet.cmd)。
+
+您也可以從這個檔案呼叫其他批次檔或命令列指令碼。
+
+# 新增應用程式
+
+1.在掛接的 WinPE 映像中建立應用程式目錄。（md "C:\WinPE_amd64\mount\windows\<MyApp>"）
+
+2.將必要的應用程式檔案複製到本機 WinPE 目錄。（Xcopy C:\<MyApp> "C:\WinPE_amd64\mount\windows\<MyApp>"）
+
+3.稍後再從 X：目錄啟動 WinPE 並執行應用程式，以測試應用程式。（X:\Windows\System32> X:\Windows\<MyApp>）
+
+ps:如果您的應用程式需要暫存儲存空間，或當 WinPE 執行應用程式時沒有回應，您可能需要增加配置給 WinPE 的暫存儲存空間 (臨時空間) 數量。
+
+4.若要在 WinPE 啟動時自動啟動執行命令介面或應用程式，請將路徑位置新增至 Winpeshl.ini 檔案。
 
 
 
